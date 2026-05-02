@@ -97,8 +97,8 @@
         .center-view { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 0 20px; width: 100%; }
         .greeting-container { width: 100%; max-width: 800px; margin-bottom: 40px; text-align: left; }
         
-        .greeting .highlight { font-family: var(--font-rubik); font-size: 55px; font-weight: 700; color: var(--accent); display: block; line-height: 1; margin-bottom: 10px; }
-        .greeting span { font-family: var(--font-mono); font-size: 20px; font-weight: normal; color: var(--text-color); }
+        .greeting .highlight { font-family: var(--font-rubik); font-size: 70px; font-weight: 700; color: var(--accent); display: block; line-height: 1; margin-bottom: 15px; }
+        .greeting span { font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: var(--text-color); }
 
         /* Chat View */
         .chat-view { display: none; flex-direction: column; flex: 1; overflow: hidden; width: 100%; }
@@ -136,15 +136,14 @@
         .input-row button { background: none; border: none; color: var(--text-color); cursor: pointer; padding: 10px; font-size: 20px; border-radius: 50%; flex-shrink: 0; opacity: 0.7;}
         .input-row button:hover { opacity: 1; color: var(--accent); }
 
-        /* Widget Kanan */
+        /* Widget Kanan (Image Custom Icon) */
         .floating-energy { position: fixed; top: 80px; right: 30px; background-color: #e0e6ed; color: #011935; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 100; font-weight: bold; font-family: var(--font-sans); cursor: grab; user-select: none; display: none; border: 2px solid transparent; transition: border-color 0.3s; }
         .floating-energy:hover { border-color: var(--accent); }
         .floating-energy:active { cursor: grabbing; }
-        .floating-energy.pulse { transform: scale(1.05); transition: transform 0.3s; }
         
         .floating-energy .title-sesi { font-size: 10px; opacity: 0.6; margin-bottom: 2px; text-align: left; }
-        .stat-row { display: flex; align-items: center; gap: 6px; font-size: 12px; font-family: var(--font-sans); }
-        .stat-row-icon { font-size: 14px; } 
+        .stat-row { display: flex; align-items: center; gap: 8px; font-size: 12px; font-family: var(--font-sans); }
+        .stat-row-icon-img { height: 16px; width: auto; object-fit: contain; } 
 
         /* =========================================
            MODALS (FLIP CARD & TOTAL ENERGY)
@@ -155,62 +154,90 @@
         .flip-card { width: 100%; height: 100%; position: relative; transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
         .flip-card.flipped { transform: rotateY(180deg); }
         
-        /* Padding dihapus dari selector umum */
         .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; border: 3px solid var(--accent); display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        /* Padding 20px khusus buat bagian air */
-        .flip-card-front { background-color: var(--modal-bg); color: white; text-align: center; padding: 20px; }
+        .flip-card-front { background-color: #737262; color: white; text-align: center; padding: 20px; }
         .flip-card-front h3 { font-family: var(--font-mono); font-size: 20px; margin-bottom: 20px; letter-spacing: 2px; }
         .flip-card-front p { font-family: var(--font-mono); font-size: 14px; padding: 0 10px; }
 
-        /* Padding 0, overflow hidden, biar gambarnya mentok layar/card */
+        .video-animasi { width: 130px; height: auto; margin-bottom: 20px; }
+
         .flip-card-back { background-color: var(--accent); transform: rotateY(180deg); padding: 0; overflow: hidden; }
         .flip-card-back img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 12px; }
         
-        .glass-container { width: 60px; height: 80px; border: 4px solid rgba(255,255,255,0.9); border-top: none; border-radius: 0 0 10px 10px; position: relative; overflow: hidden; margin-bottom: 25px; background: transparent; }
-        .water-wave { 
-            position: absolute; left: -50%; width: 200%; height: 200%; 
-            background: #4facfe; border-radius: 35%; 
-            animation: wave-spin 3s infinite linear, water-drain 3s ease-in-out forwards; 
-        }
-        .water-wave::after { 
-            content: ''; position: absolute; width: 100%; height: 100%; 
-            background: rgba(0, 242, 254, 0.5); border-radius: 40%; 
-            animation: wave-spin 4s infinite linear; 
-            top: -10%; left: 10%; 
-        }
-        
-        @keyframes wave-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes water-drain { 0% { top: -20%; } 100% { top: 120%; } }
-
         /* Modal Total Energy */
         .total-energy-content { display: none; width: 450px; background-color: var(--modal-bg); border-radius: 15px; border: 3px solid var(--accent); padding: 30px; text-align: center; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .total-energy-content * { font-family: var(--font-mono); }
         .total-energy-content h3 { font-size: 20px; letter-spacing: 2px; margin-bottom: 25px; }
-        .te-stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 25px; } 
+        .te-stats { display: flex; justify-content: center; align-items: baseline; gap: 40px; margin-bottom: 25px; } 
         
-        .te-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 14px; font-weight: bold; color: var(--accent); } 
-        .te-icon { font-size: 26px; } 
+        .te-item { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 18px; font-weight: bold; } 
+        .te-icon-img { height: 45px; width: auto; object-fit: contain; } 
         
         .te-desc { font-size: 14px; margin-bottom: 30px; line-height: 1.5; color: white; }
         .btn-tutup { background: transparent; border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 30px; border-radius: 20px; cursor: pointer; }
         .btn-tutup:hover { background: rgba(255,255,255,0.1); border-color: white; }
 
-        /* CLASS ANIMASI DROP PER KATA */
-        .drop-word {
-            display: inline-block;
-            opacity: 0;
-            animation: dropIn 0.4s forwards ease-out;
+        /* =========================================
+           CSS ODOMETER ANIMATION (PERBAIKAN ALIGNMENT & ZOOM)
+           ========================================= */
+        .odo-container { 
+            display: flex; 
+            align-items: center; /* FIX: Diganti ke center biar gak tenggelam */
+            justify-content: center; 
+            white-space: nowrap; 
         }
-        @keyframes dropIn {
-            0% { opacity: 0; transform: translateY(-15px); }
-            100% { opacity: 1; transform: translateY(0); }
+        
+        .zoom-pulse { 
+            display: inline-flex; 
+            align-items: center; /* FIX: Diganti ke center */
+            animation: pulseOdo 2.5s ease-in-out forwards; 
+        }
+
+        .odo-wrap { 
+            display: inline-flex; 
+            height: 1.1em; 
+            line-height: 1.1em; 
+            overflow: hidden; 
+            position: relative; 
+            align-items: flex-start; /* FIX: Biar track anaknya nempel persis di atas */
+        }
+        .odo-track { 
+            display: flex; 
+            flex-direction: column; 
+            transition: transform 2s cubic-bezier(0.25, 1, 0.5, 1); 
+            margin: 0; 
+            padding: 0; 
+        }
+        .odo-track div { 
+            height: 1.1em; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        
+        .static-char { 
+            display: inline-flex; 
+            height: 1.1em; 
+            align-items: center; 
+        }
+        .odo-suffix { 
+            display: inline-flex; 
+            align-items: center; 
+            margin-left: 6px; 
+        }
+        
+        @keyframes pulseOdo {
+            0% { font-size: 1em; }
+            20% { font-size: 1.5em; }
+            80% { font-size: 1.5em; }
+            100% { font-size: 1em; } 
         }
 
         @media (max-width: 768px) {
             .sidebar { position: absolute; height: 100%; box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
             .top-nav { padding: 10px 15px; }
-            .greeting .highlight { font-size: 40px; }
+            .greeting .highlight { font-size: 55px; }
             .chat-container { padding: 15px 10px; gap: 20px; }
             .floating-energy { top: 70px; right: 10px; }
             .flip-card-container, .total-energy-content { width: 90%; }
@@ -295,14 +322,13 @@
         </div>
     </div>
 
-    <!-- Widget Ngambang -->
     <div class="floating-energy" id="floatingEnergy" title="Klik untuk lihat total. Seret untuk pindah.">
         <div class="title-sesi">Sesi Saat ini</div>
         <div class="stat-row">
-            <span class="stat-row-icon" style="color: #011935;">💧</span> <span id="floating-total-ml">0</span> ML Air
+            <img src="airhitam.png" alt="Air" class="stat-row-icon-img"> <span id="floating-total-ml">0</span> ML Air
         </div>
         <div class="stat-row">
-            <span class="stat-row-icon" style="color: #011935;">⚡</span> <span id="floating-total-wh">0.0</span> WH
+            <img src="listrikhitam.png" alt="Listrik" class="stat-row-icon-img"> <span id="floating-total-wh">0.0</span> WH
         </div>
     </div>
 
@@ -312,9 +338,7 @@
             <div class="flip-card" id="flipCardElement">
                 <div class="flip-card-front">
                     <h3>LIAT NIH...</h3>
-                    <div class="glass-container">
-                        <div class="water-wave"></div>
-                    </div>
+                    <video src="animasiair.mp4" autoplay loop muted playsinline class="video-animasi"></video>
                     <p>Prompt ini ngabisin sekitar 50ml air bersih buat dinginin servernya.</p>
                 </div>
                 <div class="flip-card-back">
@@ -326,13 +350,13 @@
         <div class="total-energy-content" id="totalEnergyContainer">
             <h3>TOTAL ENERGI</h3>
             <div class="te-stats">
-                <div class="te-item">
-                    <span class="te-icon">⚡</span>
-                    <span id="modal-total-wh">0.0 WH</span>
+                <div class="te-item" style="color: #e1ff28;">
+                    <img src="listrik.png" alt="Listrik" class="te-icon-img">
+                    <span id="modal-total-wh" class="odo-container">0.0 WH</span>
                 </div>
-                <div class="te-item" style="color: #4facfe;">
-                    <span class="te-icon">💧</span>
-                    <span id="modal-total-ml">0 ML Air</span>
+                <div class="te-item" style="color: #b4ecff;">
+                    <img src="air.png" alt="Air" class="te-icon-img">
+                    <span id="modal-total-ml" class="odo-container">0 ML Air</span>
                 </div>
             </div>
             <div class="te-desc">Lumayan yah? padahal gitu doang</div>
@@ -460,23 +484,23 @@
             const flipCard = document.getElementById('flipCardElement');
             const totalContainer = document.getElementById('totalEnergyContainer');
             
-            const waterWave = document.querySelector('.water-wave');
-            waterWave.style.animation = 'none';
-            waterWave.offsetHeight; 
-            waterWave.style.animation = 'wave-spin 3s infinite linear, water-drain 3s ease-in-out forwards';
+            const videoEl = flipCard.querySelector('.video-animasi');
+            if(videoEl) {
+                videoEl.currentTime = 0;
+                videoEl.play().catch(e => console.log(e));
+            }
 
             flipCard.classList.remove('flipped');
             flipContainer.style.display = 'block';
             totalContainer.style.display = 'none';
             overlay.style.display = 'flex';
 
-            await wait(3000);
+            await wait(5000);
             flipCard.classList.add('flipped');
-            await wait(2000);
+            await wait(4000);
             overlay.style.display = 'none';
         }
 
-        /* LOGIKA DRAG YANG NGGAK BENTROK SAMA CLICK */
         let isDraggingWidget = false;
         function makeDraggable(el) {
             let startX, startY, initX, initY;
@@ -512,29 +536,75 @@
         }
         makeDraggable(document.getElementById('floatingEnergy'));
 
-        /* FUNGSI BUAT ANIMASI HURUF/KATA JATUH */
-        function animateDropText(str) {
-            return str.split(' ').map((word, index) => 
-                `<span class="drop-word" style="animation-delay: ${index * 0.15}s">${word}</span>`
-            ).join(' ');
+        /* FUNGSI JS ODOMETER (LOGIKA PENGHITUNGAN NATURAL) */
+        function animateOdometer(id, targetVal, suffix) {
+            const container = document.getElementById(id);
+            container.innerHTML = ''; 
+            
+            let valStr = targetVal.toString();
+
+            const numberWrapper = document.createElement('span');
+            numberWrapper.className = 'zoom-pulse';
+
+            const digits = valStr.split('');
+            digits.forEach((char) => {
+                if (isNaN(parseInt(char))) {
+                    const span = document.createElement('span');
+                    span.className = 'static-char';
+                    span.innerText = char;
+                    numberWrapper.appendChild(span);
+                } else {
+                    const targetNum = parseInt(char);
+                    const wrap = document.createElement('span');
+                    wrap.className = 'odo-wrap';
+                    
+                    const track = document.createElement('div');
+                    track.className = 'odo-track';
+                    
+                    let sequence = '';
+                    
+                    // FIX: Biar natural, kita set minimal dia jalan 1 putaran (0-9)
+                    // Dan angka AWAL yang dirender di HTML dijamin 0 (jadi ga layar kosong)
+                    const rolls = 1; 
+                    for (let r = 0; r <= rolls; r++) {
+                        let max = (r === rolls) ? targetNum : 9;
+                        for(let n=0; n<=max; n++) {
+                            sequence += `<div>${n}</div>`;
+                        }
+                    }
+                    
+                    track.innerHTML = sequence;
+                    wrap.appendChild(track);
+                    numberWrapper.appendChild(wrap);
+
+                    setTimeout(() => {
+                        // Ngegeser track sesuai jumlah item dikali tinggi container (1.1em)
+                        const targetIndex = (rolls * 10) + targetNum;
+                        track.style.transform = `translateY(-${targetIndex * 1.1}em)`;
+                    }, 50);
+                }
+            });
+
+            container.appendChild(numberWrapper);
+
+            const sufSpan = document.createElement('span');
+            sufSpan.className = 'odo-suffix';
+            sufSpan.innerHTML = suffix; 
+            container.appendChild(sufSpan);
         }
 
-        // Event Click buat nampilin Modal (kalo gak lagi di-drag)
         document.getElementById('floatingEnergy').addEventListener('click', (e) => {
             if (isDraggingWidget) return; 
             
             const chatData = appData.chats[appData.currentChatId];
             if(!chatData) return;
             
-            const whString = chatData.totalWh.toFixed(1) + ' WH';
-            const mlString = chatData.totalMl + ' ML Air';
-
-            document.getElementById('modal-total-wh').innerHTML = animateDropText(whString);
-            document.getElementById('modal-total-ml').innerHTML = animateDropText(mlString);
-
             document.getElementById('mainModalOverlay').style.display = 'flex';
             document.getElementById('flipCardContainer').style.display = 'none';
             document.getElementById('totalEnergyContainer').style.display = 'block';
+
+            animateOdometer('modal-total-wh', chatData.totalWh, 'WH');
+            animateOdometer('modal-total-ml', chatData.totalMl, 'ML Air');
         });
 
         function closeModals() {
@@ -576,7 +646,7 @@
             if(thinkRow) {
                 const starEl = thinkRow.querySelector('.thinking-star');
                 if(starEl) starEl.classList.remove('spin');
-                if(textEl) textEl.innerHTML = `✦ Tampilkan Alur Berpikir <span style="font-size:10px; margin-left:5px;">▼</span>`;
+                if(textEl) textEl.innerHTML = `Tampilkan Alur Berpikir <span style="font-size:10px; margin-left:5px;">▼</span>`;
             }
 
             const aiResp = aiResponses[Math.floor(Math.random() * aiResponses.length)];
@@ -612,7 +682,7 @@
 
         function appendThinkingFinalUI() {
             const row = document.createElement('div'); row.className = `message-row thinking`;
-            row.innerHTML = `<div class="thinking-content">✦ Tampilkan Alur Berpikir <span style="font-size:10px; margin-left:5px;">▼</span></div>`;
+            row.innerHTML = `<div class="thinking-content">Tampilkan Alur Berpikir <span style="font-size:10px; margin-left:5px;">▼</span></div>`;
             document.getElementById('chatContainer').appendChild(row);
         }
 
