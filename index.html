@@ -788,7 +788,9 @@
 
                     await printByteArray(new Uint8Array([0x1B, 0x61, 0x01])); 
                     await printByteArray(footerBytes);
-                    await printByteArray(new Uint8Array([0x0A, 0x0A, 0x0A, 0x0A])); 
+                    
+                    // PERBAIKAN: Ngasih enter 8 kali biar kertasnya kedorong lewatin gigi mesin pemotong
+                    await printByteArray(new Uint8Array([0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A])); 
 
                     statusText.innerHTML = "🖨️ Struk Fisik Berhasil Dicetak!";
                     await wait(1500);
