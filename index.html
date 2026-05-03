@@ -835,7 +835,7 @@ await printByteArray(footerBytes);
                     
                     // JEDA DITAMBAH JADI 60ms. 
                     // Printer thermal butuh waktu fisik buat nge-burn titik hitam ke kertas.
-                    await new Promise(resolve => setTimeout(resolve, 60));
+                    await new Promise(resolve => setTimeout(resolve, 40));
                 }
             } catch (error) { 
                 console.error('Error saat ngirim byte array:', error); 
