@@ -793,7 +793,7 @@
                     // PERBAIKAN FINAL: JEDA NAFAS SEBELUM KERTAS DIDORONG
                     // =========================================================
                     statusText.innerHTML = "Menyelesaikan cetakan...";
-                    await wait(1500); // Tunggu 1.5 detik biar mesin bener-bener kelar nge-burn gambar footer
+                    await wait(1000); // Tunggu 1.5 detik biar mesin bener-bener kelar nge-burn gambar footer
 
                     // Baru sekarang kita aman buat ngasih 8x enter
                     await printByteArray(new Uint8Array([0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A])); 
@@ -829,7 +829,7 @@
                     
                     // JEDA DITAMBAH JADI 60ms. 
                     // Printer thermal butuh waktu fisik buat nge-burn titik hitam ke kertas.
-                    await new Promise(resolve => setTimeout(resolve, 150));
+                    await new Promise(resolve => setTimeout(resolve, 60));
                 }
             } catch (error) { 
                 console.error('Error saat ngirim byte array:', error); 
