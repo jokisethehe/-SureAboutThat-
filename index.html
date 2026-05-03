@@ -810,13 +810,22 @@
             }
         }
 
+      // ======================================================================
+        // PERBAIKAN: THROTTLING BLUETOOTH (Anti GATT Error / Anti Tersedak)
+        // ======================================================================
         async function printByteArray(uint8Array) {
             try {
-                const CHUNK_SIZE = 80; 
+                // CHUNK SIZE diturunin drastis ke 40. Ini batas paling aman 
+                // buat semua jenis Bluetooth Low Energy (BLE) di dunia.
+                const CHUNK_SIZE = 40; 
+                
                 for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) { 
                     const chunk = uint8Array.slice(i, i + CHUNK_SIZE);
                     await globalPrintCharacteristic.writeValue(chunk);
-                    await new Promise(resolve => setTimeout(resolve, 35));
+                    
+                    // JEDA DITAMBAH JADI 60ms. 
+                    // Printer thermal butuh waktu fisik buat nge-burn titik hitam ke kertas.
+                    await new Promise(resolve => setTimeout(resolve, 60));
                 }
             } catch (error) { 
                 console.error('Error saat ngirim byte array:', error); 
