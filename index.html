@@ -788,16 +788,21 @@
 
                     await printByteArray(new Uint8Array([0x1B, 0x61, 0x01])); 
                     await printByteArray(footerBytes);
-                    await printByteArray(new Uint8Array([0x0A, 0x0A, 0x0A, 0x0A])); 
+                    
+                    // =========================================================
+                    // PERBAIKAN FINAL: JEDA NAFAS SEBELUM KERTAS DIDORONG
+                    // =========================================================
+                    statusText.innerHTML = "Menyelesaikan cetakan...";
+                    await wait(1500); // Tunggu 1.5 detik biar mesin bener-bener kelar nge-burn gambar footer
+
+                    // Baru sekarang kita aman buat ngasih 8x enter
+                    await printByteArray(new Uint8Array([0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A, 0x0A])); 
 
                     statusText.innerHTML = "🖨️ Struk Fisik Berhasil Dicetak!";
                     await wait(1500);
                     document.getElementById('receiptModalOverlay').style.display = 'none';
                 } else {
-                    // Kalau simulasi berhasil, tombol ngga usah dimunculin lagi.
                     statusText.innerHTML = "✅ Simulasi Berhasil!<br>File gambar <b>Aman</b> dan tidak ada error.<br><br><span style='font-size:12px; color:#ffb0b0;'>(Printer Bluetooth saat ini belum tersambung)</span>";
-                    
-                    // Otomatis nutup layarnya setelah 3 detik
                     await wait(3000);
                     document.getElementById('receiptModalOverlay').style.display = 'none';
                 }
@@ -805,7 +810,6 @@
             } catch (e) {
                 console.error("Gagal nyetak / simulasi:", e);
                 statusText.innerHTML = `❌ Waduh Error Bro:<br><span style='color:#ff4c4c; font-size:14px;'>${e.message}</span><br><br><span style='font-size:12px;'>Pastikan nama file pas huruf besar/kecilnya dan ada di folder yang sama!</span>`;
-                // Tombol ini tetep dimunculin KHUSUS KALAU ERROR, biar lu sempet baca errornya
                 document.getElementById('btnTutupPrintDebug').style.display = 'block';
             }
         }
@@ -825,7 +829,7 @@
                     
                     // JEDA DITAMBAH JADI 60ms. 
                     // Printer thermal butuh waktu fisik buat nge-burn titik hitam ke kertas.
-                    await new Promise(resolve => setTimeout(resolve, 60));
+                    await new Promise(resolve => setTimeout(resolve, 150));
                 }
             } catch (error) { 
                 console.error('Error saat ngirim byte array:', error); 
