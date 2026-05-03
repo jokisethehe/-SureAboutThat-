@@ -7,9 +7,6 @@
     
     <!-- Import Font -->
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
-    
-    <!-- IMPORT LIBRARY BIKIN SCREENSHOT KE CANVAS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         :root {
@@ -147,9 +144,9 @@
         .btn-tutup { background: transparent; border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 30px; border-radius: 20px; cursor: pointer; }
         .btn-tutup:hover { background: rgba(255,255,255,0.1); border-color: white; }
 
-        /* CSS STRUK THERMAL - Lebar dipasin 384px buat printer kasir 58mm */
-        .receipt-card { background: #fff; color: #000; padding: 20px 20px 40px 20px; width: 384px; border-radius: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
-        .print-status-text { text-align: center; font-family: var(--font-sans); color: var(--accent); margin-top: 25px; font-weight: bold; font-size: 16px; }
+        /* MODAL PRINT LOADING */
+        .print-status-box { background-color: var(--modal-bg); border: 3px solid var(--accent); padding: 30px; border-radius: 15px; text-align: center; color: white; font-family: var(--font-mono); box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 300px; }
+        .print-status-text { margin-top: 15px; font-weight: bold; font-size: 16px; }
 
         /* CSS ODOMETER */
         .odo-container { display: flex; align-items: center; justify-content: center; white-space: nowrap; }
@@ -168,7 +165,6 @@
             .chat-container { padding: 15px 10px; gap: 20px; }
             .floating-energy { top: 70px; right: 10px; }
             .flip-card-container, .total-energy-content { width: 90%; }
-            .receipt-card { width: 384px; transform: scale(0.85); /* Di HP dikecilin visualnya tapi aslinya ttp 384px */ }
         }
     </style>
 </head>
@@ -303,11 +299,12 @@
         </div>
     </div>
 
-    <!-- MODAL STRUK -->
+    <!-- MODAL PRINT LOADING -->
     <div id="receiptModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 3000; justify-content: center; align-items: center; flex-direction: column;">
-        <!-- Div yang akan di-"screenshot" -->
-        <div class="receipt-card" id="receiptContent"></div>
-        <div class="print-status-text" id="printStatusText">Menyiapkan Desain Struk...</div>
+        <div class="print-status-box">
+            <div style="font-size: 30px;">🖨️</div>
+            <div class="print-status-text" id="printStatusText">Mempersiapkan Printer...</div>
+        </div>
     </div>
 
     <script>
@@ -673,7 +670,70 @@
             return leftText + " ".repeat(Math.max(0, spacesNeeded)) + rightText;
         }
 
-        // PERBAIKAN TOTAL: FUNGSI PRINT DIUBAH JADI MODE CANVAS IMAGE
+        // ======================================================================
+        // PERBAIKAN: FUNGSI MUAT GAMBAR LOKAL (header.jpeg & footer.jpeg)
+        // ======================================================================
+        function loadImageAsESC_POS(imageSrc) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                
+                img.onload = () => {
+                    const width = 384; // 384 pixel / dots buat standar kertas 58mm
+                    const height = Math.round((img.height * width) / img.width);
+                    
+                    const offscreen = document.createElement('canvas');
+                    offscreen.width = width;
+                    offscreen.height = height;
+                    const octx = offscreen.getContext('2d', { willReadFrequently: true });
+                    
+                    octx.fillStyle = '#FFFFFF';
+                    octx.fillRect(0, 0, width, height);
+                    octx.drawImage(img, 0, 0, width, height);
+
+                    const imgData = octx.getImageData(0, 0, width, height).data;
+
+                    const xL = (width / 8) % 256;
+                    const xH = Math.floor((width / 8) / 256);
+                    const yL = height % 256;
+                    const yH = Math.floor(height / 256);
+
+                    let data = [
+                        0x1D, 0x76, 0x30, 0x00, xL, xH, yL, yH 
+                    ]; 
+
+                    for (let y = 0; y < height; y++) {
+                        for (let x = 0; x < width; x += 8) {
+                            let byte = 0;
+                            for (let b = 0; b < 8; b++) {
+                                let i = ((y * width) + x + b) * 4;
+                                if (x + b < width) {
+                                    let r = imgData[i];
+                                    let g = imgData[i+1];
+                                    let b_val = imgData[i+2];
+                                    let a = imgData[i+3];
+                                    
+                                    // Deteksi warna jadi hitam-putih
+                                    let luminance = (r * 0.299 + g * 0.587 + b_val * 0.114);
+                                    if (a > 128 && luminance < 128) {
+                                        byte |= (1 << (7 - b)); 
+                                    }
+                                }
+                            }
+                            data.push(byte);
+                        }
+                    }
+                    resolve(new Uint8Array(data));
+                };
+                
+                img.onerror = () => reject(new Error(`Gagal memuat gambar: ${imageSrc}`));
+                img.src = imageSrc;
+            });
+        }
+
+        // ======================================================================
+        // FUNGSI PRINT UTAMA
+        // ======================================================================
         async function generateAndPrintReceipt(c) {
             const wh = c.totalWh.toFixed(1);
             const ml = c.totalMl;
@@ -686,150 +746,101 @@
             
             const dashedLine = "-".repeat(32);
             
-            const boldDashedLine = `<b style="font-family: 'IBM Plex Mono', monospace;">${dashedLine}</b>`;
-            const strukBodyTextHTML = 
-                boldDashedLine + "\n" +
+            // Siapkan plain text bagian tengah
+            const strukBodyTextPlain = 
+                dashedLine + "\n" +
                 formatLine("Tanggal:", `${dateStr} (${timeStr} WIB)`) + "\n" +
                 formatLine("Nama:", namaUser) + "\n" +
-                boldDashedLine + "\n" +
+                dashedLine + "\n" +
                 formatLine("Air Pendingin Server", `${ml} ML`) + "\n" +
                 formatLine("Listrik", `${wh} WH`) + "\n" +
                 formatLine("Emisi Karbon (CO2)", `${co2} Gram`) + "\n\n" +
-                boldDashedLine + "\n" +
-                `<b style="font-family: 'IBM Plex Mono', monospace;">TOTAL</b>\n` +
-                `<b style="font-family: 'IBM Plex Mono', monospace;">${formatLine("KERUSAKAN:", "BUMI YANG BAYAR")}</b>`;
+                dashedLine + "\n";
 
-            // HTML ini yang bakal dijadiin gambar. Bebas lu kreasikan secantik mungkin anak DKV!
-            const previewHTML = `
-                <div style="font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 26px; line-height: 1.2; text-transform: uppercase; text-align: center; margin-bottom: 25px; color: #000; letter-spacing: -0.5px;">
-                    INSTANT SIH TAPI<br>EMANGNYA WORTH IT?<br>CEK SENDIRI DEH...
-                </div>
-                <div style="width: 100%; display: flex; justify-content: center; overflow-x: hidden;">
-                    <div style="font-family: 'IBM Plex Mono', monospace; white-space: pre; font-size: 16px; line-height: 1.5; color: #000; text-align: left; letter-spacing: 0px;">${strukBodyTextHTML}</div>
-                </div>
-                <div style="font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; text-align: center; font-size: 15px; margin-top: 35px; line-height: 1.4; color: #000;">
-                    Semua sumber daya di atas terkuras<br>cuma buat nanya hal receh kaya tadi.<br>
-                    <strong style="font-weight: 900; font-size:18px; display: block; margin-top: 15px;">#SureAboutThat?</strong>
-                </div>
-            `;
+            const footerTotalText = 
+                "TOTAL\n" +
+                formatLine("KERUSAKAN:", "BUMI YANG BAYAR") + "\n\n";
 
-            const receiptDiv = document.getElementById('receiptContent');
-            receiptDiv.innerHTML = previewHTML;
+            // Munculin layar loading print
             document.getElementById('receiptModalOverlay').style.display = 'flex';
             const statusText = document.getElementById('printStatusText');
 
             if (globalPrintCharacteristic) {
-                statusText.innerText = "Memproses Desain ke Gambar Pixel...";
-                
-                // Beri waktu sejenak agar browser memuat font sebelum di-screenshot
-                await wait(1000); 
-
                 try {
-                    // LANGKAH 1: Capture HTML jadi Canvas
-                    const canvas = await html2canvas(receiptDiv, { 
-                        scale: 1, // Skala normal, krn lebar container udah diset 384px (pas untuk printer 58mm)
-                        useCORS: true, 
-                        backgroundColor: '#FFFFFF' 
-                    });
-
-                    statusText.innerText = "Mengirim Raster Image ke Printer (Ini agak lama)...";
+                    statusText.innerText = "Memuat Gambar (header.jpeg & footer.jpeg)...";
                     
-                    // LANGKAH 2: Ekstrak ke ESC/POS Raster Array
-                    const imageBytes = convertCanvasToESC_POS(canvas);
+                    // Tarik data gambar dari folder lokal
+                    const headerBytes = await loadImageAsESC_POS('header.jpeg');
+                    const footerBytes = await loadImageAsESC_POS('footer.jpeg');
 
-                    // LANGKAH 3: Cetak!
-                    await printImageArray(imageBytes);
+                    const ESC_INIT = "\x1B\x40";
+                    const ESC_BOLD_ON = "\x1B\x45\x01";
+                    const ESC_BOLD_OFF = "\x1B\x45\x00";
+                    const ESC_ALIGN_CENTER = "\x1B\x61\x01";
+                    const ESC_ALIGN_LEFT = "\x1B\x61\x00";
 
-                    statusText.innerText = "Struk Visual berhasil dicetak!";
+                    // ==============================
+                    // 1. PRINT HEADER (GAMBAR)
+                    // ==============================
+                    statusText.innerText = "Mencetak Header...";
+                    await printByteArray(new Uint8Array([0x1B, 0x40, 0x1B, 0x61, 0x01])); // Reset & Posisi Tengah
+                    await printByteArray(headerBytes);
+                    await wait(200);
+
+                    // ==============================
+                    // 2. PRINT BODY (TEKS)
+                    // ==============================
+                    statusText.innerText = "Mencetak Data Pemakaian...";
+                    const encoder = new TextEncoder();
+                    await printByteArray(new Uint8Array([0x1B, 0x61, 0x00])); // Posisi Kiri buat teksnya
+                    await printByteArray(encoder.encode(strukBodyTextPlain.replace(/\n/g, '\r\n')));
+                    
+                    // Print bagian TOTAL dengan Bold
+                    await printByteArray(encoder.encode(ESC_BOLD_ON + footerTotalText.replace(/\n/g, '\r\n') + ESC_BOLD_OFF));
+                    await wait(200);
+
+                    // ==============================
+                    // 3. PRINT FOOTER (GAMBAR)
+                    // ==============================
+                    statusText.innerText = "Mencetak Footer...";
+                    await printByteArray(new Uint8Array([0x1B, 0x61, 0x01])); // Posisi Tengah lagi
+                    await printByteArray(footerBytes);
+
+                    // Kirim enter 4 kali biar kertas gampang dipotong
+                    await printByteArray(new Uint8Array([0x0A, 0x0A, 0x0A, 0x0A]));
+
+                    statusText.innerText = "Struk Fisik Berhasil Dicetak!";
+                    await wait(1500);
+
                 } catch (e) {
-                    console.error("Gagal convert gambar:", e);
-                    statusText.innerText = "Gagal render gambar.";
+                    console.error("Gagal nyetak:", e);
+                    statusText.innerText = "Error: File gambar ngga ketemu / gagal print.";
+                    await wait(3000);
                 }
-
-                await wait(2000); 
             } else {
-                statusText.innerText = "Printer tidak terhubung. Hanya Preview.";
-                await wait(4000); 
+                statusText.innerText = "Printer tidak terhubung.";
+                await wait(2000);
             }
 
+            // Langsung otomatis ketutup setelah kelar
             document.getElementById('receiptModalOverlay').style.display = 'none';
         }
 
-        // FUNGSI AJAIB: Ngerubah Canvas berwarna jadi array heksadesimal hitam-putih
-        function convertCanvasToESC_POS(canvas) {
-            const width = 384; // 384 dots = standar lebar kertas printer kasir 58mm
-            const height = Math.round((canvas.height * width) / canvas.width);
-
-            // Bikin canvas virtual buat nge-resize & narik data pixel
-            const offscreen = document.createElement('canvas');
-            offscreen.width = width;
-            offscreen.height = height;
-            const octx = offscreen.getContext('2d', { willReadFrequently: true });
-            
-            // Wajib background putih
-            octx.fillStyle = '#FFFFFF';
-            octx.fillRect(0, 0, width, height);
-            octx.drawImage(canvas, 0, 0, width, height);
-
-            const imgData = octx.getImageData(0, 0, width, height).data;
-
-            // Command Printer GS v 0 (Print raster bit image)
-            const xL = (width / 8) % 256;
-            const xH = Math.floor((width / 8) / 256);
-            const yL = height % 256;
-            const yH = Math.floor(height / 256);
-
-            // Header format ESC POS image
-            let data = [
-                0x1B, 0x40, // Init
-                0x1D, 0x76, 0x30, 0x00, xL, xH, yL, yH // Print Image Command
-            ]; 
-
-            // Looping pixel by pixel, convert ke bit hitam (1) dan putih (0)
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x += 8) {
-                    let byte = 0;
-                    for (let b = 0; b < 8; b++) {
-                        let i = ((y * width) + x + b) * 4;
-                        if (x + b < width) {
-                            let r = imgData[i];
-                            let g = imgData[i+1];
-                            let b_val = imgData[i+2];
-                            let a = imgData[i+3];
-                            
-                            // Hitung kecerahan (luminance). Di bawah 128 = hitam
-                            let luminance = (r * 0.299 + g * 0.587 + b_val * 0.114);
-                            if (a > 128 && luminance < 128) {
-                                byte |= (1 << (7 - b)); // Nyalain titik pixel
-                            }
-                        }
-                    }
-                    data.push(byte);
-                }
-            }
-            
-            // Tambahin perintah enter 3 kali biar kertasnya keluar
-            data.push(0x0A, 0x0A, 0x0A);
-            
-            return new Uint8Array(data);
-        }
-
-        // FUNGSI PRINT BITMAP
-        async function printImageArray(uint8Array) {
+        // FUNGSI SEND DATA KE BLUETOOTH
+        async function printByteArray(uint8Array) {
             try {
-                // Ukuran chunk dinaikkan dikit jadi 100 biar cepet, tapi tetep aman buat BLE
-                const CHUNK_SIZE = 100;
+                const CHUNK_SIZE = 80; 
                 
                 for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) { 
                     const chunk = uint8Array.slice(i, i + CHUNK_SIZE);
                     await globalPrintCharacteristic.writeValue(chunk);
                     
-                    // Jeda nafas printer (karena gambar sangat berat)
-                    await new Promise(resolve => setTimeout(resolve, 30));
+                    // Jeda per potongan data (penting biar memori printer ngga kepenuhan)
+                    await new Promise(resolve => setTimeout(resolve, 35));
                 }
-                console.log('Gambar Struk berhasil dicetak!');
             } catch (error) { 
-                console.error('Error saat ngirim data gambar:', error); 
+                console.error('Error saat ngirim byte array:', error); 
+                throw error;
             }
         }
     </script>
