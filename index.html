@@ -648,6 +648,7 @@
         }
 
         let globalPrintCharacteristic = null;
+        let globalBluetoothDevice = null; // Tambahin variabel ini di atas
 
         async function connectBluetoothPrinter() {
             try {
@@ -656,11 +657,27 @@
                     optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', '49535343-fe7d-4ae5-8fa9-9fafd205e455'] 
                 });
                 console.log('Menyambungkan ke:', device.name);
-                const server = await device.gatt.connect(); const services = await server.getPrimaryServices();
+                
+                globalBluetoothDevice = device; // Simpan devicenya
+
+                // --- TAMBAHIN LISTENER INI BRO ---
+                // Biar kalau printernya ngambek/putus, script kita tau
+                device.addEventListener('gattserverdisconnected', () => {
+                    console.log('Koneksi Bluetooth Terputus!');
+                    globalPrintCharacteristic = null; 
+                });
+                // ---------------------------------
+
+                const server = await device.gatt.connect(); 
+                const services = await server.getPrimaryServices();
                 for (const service of services) {
                     const characteristics = await service.getCharacteristics();
                     for (const char of characteristics) {
-                        if (char.properties.write || char.properties.writeWithoutResponse) { globalPrintCharacteristic = char; alert(`Berhasil terhubung ke Printer: ${device.name}!`); return; }
+                        if (char.properties.write || char.properties.writeWithoutResponse) { 
+                            globalPrintCharacteristic = char; 
+                            alert(`Berhasil terhubung ke Printer: ${device.name}!`); 
+                            return; 
+                        }
                     }
                 }
                 alert('Gagal mendeteksi jalur print di perangkat ini.');
@@ -678,8 +695,12 @@
                 
                 img.onload = () => {
                     try {
-                        const width = 384; 
-                        const height = Math.round((img.height * width) / img.width);
+                // SESUDAH - batasi tinggi maksimal 200px
+const width = 384;
+let height = Math.round((img.height * width) / img.width);
+if (height > 200) {
+    height = 200; // Cap tinggi biar gak terlalu gede
+}
                         
                         const offscreen = document.createElement('canvas');
                         offscreen.width = width;
@@ -820,28 +841,32 @@ await printByteArray(footerBytes);
             }
         }
 
-      // ======================================================================
-        // PERBAIKAN: THROTTLING BLUETOOTH (Anti GATT Error / Anti Tersedak)
-        // ======================================================================
         async function printByteArray(uint8Array) {
-            try {
-                // CHUNK SIZE diturunin drastis ke 40. Ini batas paling aman 
-                // buat semua jenis Bluetooth Low Energy (BLE) di dunia.
-                const CHUNK_SIZE = 40; 
-                
-                for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) { 
-                    const chunk = uint8Array.slice(i, i + CHUNK_SIZE);
-                    await globalPrintCharacteristic.writeValue(chunk);
-                    
-                    // JEDA DITAMBAH JADI 60ms. 
-                    // Printer thermal butuh waktu fisik buat nge-burn titik hitam ke kertas.
-                    await new Promise(resolve => setTimeout(resolve, 40));
-                }
-            } catch (error) { 
-                console.error('Error saat ngirim byte array:', error); 
-                throw error;
+    try {
+        const CHUNK_SIZE = 20; // ← WAJIB 20, sesuai BLE MTU default
+
+        for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) {
+            // Cek koneksi sebelum tiap write
+            if (!globalPrintCharacteristic || !globalBluetoothDevice?.gatt?.connected) {
+                throw new Error("Koneksi Bluetooth terputus saat mencetak! Coba konek ulang printer.");
             }
+
+            const chunk = uint8Array.slice(i, i + CHUNK_SIZE);
+
+            if (globalPrintCharacteristic.properties.writeWithoutResponse) {
+                await globalPrintCharacteristic.writeValueWithoutResponse(chunk);
+            } else {
+                await globalPrintCharacteristic.writeValue(chunk);
+            }
+
+            // Delay 60ms - cukup buat kebanyakan thermal printer BT
+            await new Promise(resolve => setTimeout(resolve, 60));
         }
+    } catch (error) {
+        console.error('Error saat ngirim byte array:', error);
+        throw error;
+    }
+}
     </script>
 </body>
 </html>
