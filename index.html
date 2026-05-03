@@ -676,8 +676,8 @@
             return " ".repeat(leftPad) + text;
         }
 
-        // PERBAIKAN 2: Penambahan inline style buat nge-lock font monospace biar garisnya full
-        async function generateAndPrintReceipt(c) {
+      // PERBAIKAN: Menambahkan Kode Mesin (ESC/POS) untuk printer fisik
+      async function generateAndPrintReceipt(c) {
             const wh = c.totalWh.toFixed(1);
             const ml = c.totalMl;
             const co2 = (c.totalWh * 0.85).toFixed(1); 
@@ -689,21 +689,8 @@
             
             const dashedLine = "-".repeat(32);
             
-            // Maksa pake font monospace di dalam tag bold biar ukurannya ga menciut
+            // === BAGIAN UNTUK PREVIEW DI LAYAR HTML (TETAP PAKAI CSS) ===
             const boldDashedLine = `<b style="font-family: 'IBM Plex Mono', monospace;">${dashedLine}</b>`;
-
-            const strukBodyTextPlain = 
-                dashedLine + "\n" +
-                formatLine("Tanggal:", `${dateStr} (${timeStr} WIB)`) + "\n" +
-                formatLine("Nama:", namaUser) + "\n" +
-                dashedLine + "\n" +
-                formatLine("Air Pendingin Server", `${ml} ML`) + "\n" +
-                formatLine("Listrik", `${wh} WH`) + "\n" +
-                formatLine("Emisi Karbon (CO2)", `${co2} Gram`) + "\n\n" +
-                dashedLine + "\n" +
-                "TOTAL\n" +
-                formatLine("KERUSAKAN:", "BUMI YANG BAYAR");
-
             const strukBodyTextHTML = 
                 boldDashedLine + "\n" +
                 formatLine("Tanggal:", `${dateStr} (${timeStr} WIB)`) + "\n" +
@@ -716,25 +703,13 @@
                 `<b style="font-family: 'IBM Plex Mono', monospace;">TOTAL</b>\n` +
                 `<b style="font-family: 'IBM Plex Mono', monospace;">${formatLine("KERUSAKAN:", "BUMI YANG BAYAR")}</b>`;
 
-            const printText = 
-                centerText("INSTANT SIH TAPI") + "\n" +
-                centerText("EMANGNYA WORTH IT?") + "\n" +
-                centerText("CEK SENDIRI DEH...") + "\n\n" +
-                strukBodyTextPlain + "\n\n\n" +
-                centerText("Semua sumber daya di atas") + "\n" +
-                centerText("terkuras cuma buat nanya hal") + "\n" +
-                centerText("receh kaya tadi.") + "\n" +
-                centerText("#SureAboutThat?") + "\n\n\n";
-
             const previewHTML = `
                 <div style="font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 24px; line-height: 1.2; text-transform: uppercase; text-align: center; margin-bottom: 25px; color: #000; letter-spacing: -0.5px;">
                     INSTANT SIH TAPI<br>EMANGNYA WORTH IT?<br>CEK SENDIRI DEH...
                 </div>
-                
                 <div style="width: 100%; display: flex; justify-content: center; overflow-x: hidden;">
                     <div style="font-family: 'IBM Plex Mono', monospace; white-space: pre; font-size: 15px; line-height: 1.5; color: #000; text-align: left; letter-spacing: 0px;">${strukBodyTextHTML}</div>
                 </div>
-
                 <div style="font-family: 'IBM Plex Sans', sans-serif; font-style: italic; text-align: center; font-size: 15px; margin-top: 35px; line-height: 1.4; color: #000;">
                     Semua sumber daya di atas terkuras<br>cuma buat nanya hal receh kaya tadi.<br>
                     <strong style="font-weight: 700; display: block; margin-top: 8px;">#SureAboutThat?</strong>
@@ -747,6 +722,37 @@
 
             if (globalPrintCharacteristic) {
                 statusText.innerText = "Sedang mencetak struk...";
+
+                // === BAGIAN UNTUK PRINTER FISIK (MENGGUNAKAN KODE ESC/POS) ===
+                const ESC_INIT = "\x1B\x40";       // Reset Printer
+                const ESC_BOLD_ON = "\x1B\x45\x01"; // Nyalakan Bold
+                const ESC_BOLD_OFF = "\x1B\x45\x00";// Matikan Bold
+
+                // Kita selipkan kode Bold di teks yang mau dicetak tebal
+                const printText = 
+                    ESC_INIT + 
+                    ESC_BOLD_ON +
+                    centerText("INSTANT SIH TAPI") + "\n" +
+                    centerText("EMANGNYA WORTH IT?") + "\n" +
+                    centerText("CEK SENDIRI DEH...") + "\n\n" +
+                    ESC_BOLD_OFF +
+                    dashedLine + "\n" +
+                    formatLine("Tanggal:", `${dateStr} (${timeStr} WIB)`) + "\n" +
+                    formatLine("Nama:", namaUser) + "\n" +
+                    dashedLine + "\n" +
+                    formatLine("Air Pendingin Server", `${ml} ML`) + "\n" +
+                    formatLine("Listrik", `${wh} WH`) + "\n" +
+                    formatLine("Emisi Karbon (CO2)", `${co2} Gram`) + "\n\n" +
+                    dashedLine + "\n" +
+                    ESC_BOLD_ON +
+                    "TOTAL\n" +
+                    formatLine("KERUSAKAN:", "BUMI YANG BAYAR") + "\n\n\n" +
+                    ESC_BOLD_OFF +
+                    centerText("Semua sumber daya di atas") + "\n" +
+                    centerText("terkuras cuma buat nanya hal") + "\n" +
+                    centerText("receh kaya tadi.") + "\n" +
+                    centerText("#SureAboutThat?") + "\n\n\n\n";
+
                 await executePrint(printText);
                 statusText.innerText = "Struk berhasil dicetak!";
                 await wait(1500); 
@@ -756,6 +762,29 @@
             }
 
             document.getElementById('receiptModalOverlay').style.display = 'none';
+        }
+
+        // PERBAIKAN: Fungsi Print sekarang diberi JEDA WAKTU agar buffer printer tidak jebol
+        async function executePrint(text) {
+            try {
+                // Mesin printer fisik butuh \r\n (Carriage Return + Linefeed) untuk enter yang sempurna
+                const formattedText = text.replace(/\n/g, '\r\n');
+                const encoder = new TextEncoder(); 
+                const data = encoder.encode(formattedText); 
+                
+                // Ukuran chunk dikecilkan jadi 40 bytes (standar aman BLE)
+                const CHUNK_SIZE = 40;
+                
+                for (let i = 0; i < data.length; i += CHUNK_SIZE) { 
+                    await globalPrintCharacteristic.writeValue(data.slice(i, i + CHUNK_SIZE));
+                    
+                    // INI KUNCINYA: Kasih nafas 50 milidetik ke printer setiap nerima teks
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+                console.log('Struk berhasil dicetak sempurna!');
+            } catch (error) { 
+                console.error('Error saat ngirim data:', error); 
+            }
         }
 
         async function executePrint(text) {
