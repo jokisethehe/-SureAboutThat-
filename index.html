@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Energy Checker - TA</title>
     
-    <!-- Import 3 Font dari Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Rubik:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Import Font -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -36,59 +36,37 @@
         body { background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; overflow: hidden; }
 
         /* Sidebar */
-        .sidebar {
-            width: 280px; background-color: var(--sidebar-bg); padding: 20px 10px;
-            display: flex; flex-direction: column; border-right: 1px solid var(--border-color);
-            z-index: 10; transition: margin-left 0.3s ease; flex-shrink: 0;
-            font-family: var(--font-sans);
-        }
+        .sidebar { width: 280px; background-color: var(--sidebar-bg); padding: 20px 10px; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); z-index: 10; transition: margin-left 0.3s ease; flex-shrink: 0; }
         .sidebar.collapsed { margin-left: -280px; }
-        
-        .sidebar-header { 
-            position: relative; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; 
-            padding: 10px 0; 
-            margin-bottom: 30px; 
-        }
-        .sidebar-logo { 
-            height: 99px; 
-            object-fit: contain; 
-        }
-        .menu-btn { 
-            position: absolute; 
-            top: 0; 
-            right: 10px; 
-            background: none; 
-            border: none; 
-            color: var(--text-color); 
-            font-size: 24px; 
-            cursor: pointer; 
-        }
+        .sidebar-header { position: relative; display: flex; justify-content: center; align-items: flex-start; padding: 10px 0; margin-bottom: 30px; }
+        .sidebar-logo { height: 99px; object-fit: contain; }
+        .menu-btn { position: absolute; top: 0; right: 10px; background: none; border: none; color: var(--text-color); font-size: 24px; cursor: pointer; }
         
         .new-chat { background-color: transparent; color: var(--text-color); border: 1px solid var(--border-color); padding: 10px 15px; border-radius: 20px; cursor: pointer; text-align: left; font-size: 14px; display: flex; align-items: center; gap: 10px; margin: 0 10px 20px 10px; }
         .new-chat:hover { background-color: var(--hover-bg); }
-        
         .history-title { font-size: 11px; font-weight: bold; margin-bottom: 10px; padding-left: 15px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
         .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
         .history-item { padding: 10px 15px; border-radius: 20px; cursor: pointer; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 5px; color: var(--text-color); }
         .history-item:hover { background-color: var(--hover-bg); }
         .history-item.active { background-color: var(--active-bg); color: var(--active-text); font-weight: bold; }
         
-        .setting-btn { margin: 10px; background: transparent; color: var(--text-color); border: none; padding: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; opacity: 0.8;}
-        .setting-btn:hover { opacity: 1; }
+        .setting-btn { margin: 10px; background: transparent; color: var(--text-color); border: none; padding: 12px 15px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: bold; font-size: 14px; opacity: 0.8; border-radius: 12px;}
+        .setting-btn:hover { opacity: 1; background-color: var(--hover-bg); }
+
+        /* Dropdown Menu Clean */
+        .dropdown { position: relative; width: calc(100% - 20px); margin: auto auto 10px auto; }
+        .dropdown-content { display: none; position: absolute; background-color: var(--sidebar-bg); width: 100%; box-shadow: 0px -5px 15px rgba(0,0,0,0.3); z-index: 100; border: 1px solid var(--border-color); border-radius: 12px; bottom: 110%; left: 0; overflow: hidden;}
+        .dropdown-content button { color: var(--text-color); padding: 12px 15px; text-decoration: none; display: flex; align-items: center; gap: 10px; background: transparent; border: none; width: 100%; cursor: pointer; font-weight: bold; font-size: 14px; text-align: left; }
+        .dropdown-content button:hover { background-color: var(--hover-bg); }
+        .show { display: block; }
 
         /* Main Content */
         .main-content { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; }
-        
-        /* Top Navigation */
         .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; height: 60px; background-color: var(--topbar-bg); z-index: 5; }
         .top-nav-left { display: flex; align-items: center; gap: 15px; }
         .floating-hamburger { background: none; border: none; color: var(--text-color); font-size: 24px; cursor: pointer; display: none; }
         .sidebar.collapsed ~ .main-content .floating-hamburger { display: block; }
         .app-title { font-size: 20px; font-weight: bold; font-family: var(--font-mono); opacity: 0.8;}
-        
         .top-nav-right { display: flex; align-items: center; gap: 15px; }
         .pro-badge { background-color: var(--accent); color: var(--active-text); padding: 4px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; font-family: var(--font-mono); }
         .top-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--user-avatar); color: var(--active-text); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
@@ -96,7 +74,6 @@
         /* Center View */
         .center-view { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 0 20px; width: 100%; }
         .greeting-container { width: 100%; max-width: 800px; margin-bottom: 40px; text-align: left; }
-        
         .greeting .highlight { font-family: var(--font-rubik); font-size: 70px; font-weight: 700; color: var(--accent); display: block; line-height: 1; margin-bottom: 15px; }
         .greeting span { font-family: var(--font-mono); font-size: 22px; font-weight: 700; color: var(--text-color); }
 
@@ -108,7 +85,7 @@
         /* Messages */
         .message-row { display: flex; max-width: 100%; align-items: flex-start; }
         .message-row.user { justify-content: flex-end; width: 100%; }
-        .user .message-content { background-color: var(--user-msg-bg); padding: 15px 20px; border-radius: 20px; display: inline-block; max-width: 80%; word-wrap: break-word; color: var(--text-color); border: 1px solid var(--border-color); font-family: var(--font-sans); }
+        .user .message-content { background-color: var(--user-msg-bg); padding: 15px 20px; border-radius: 20px; display: inline-block; max-width: 80%; word-wrap: break-word; color: var(--text-color); border: 1px solid var(--border-color); font-family: var(--font-sans); line-height: 1.5; }
         .message-row.ai { justify-content: flex-start; gap: 15px; width: 100%; }
         .ai .message-content { padding: 5px 0; line-height: 1.6; background-color: transparent; max-width: calc(100% - 50px); color: var(--text-color); font-family: var(--font-sans); }
         .msg-image-preview { max-width: 250px; border-radius: 10px; margin-top: 10px; margin-bottom: 10px; display: block; }
@@ -123,116 +100,63 @@
         /* Input Area */
         .input-area { width: 100%; display: flex; justify-content: center; padding: 20px 20px; background-color: transparent; flex-shrink: 0; }
         .input-wrapper { width: 100%; max-width: 800px; position: relative; }
-        .input-box-container { background-color: var(--input-bg); border-radius: 30px; border: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 5px 10px; width: 100%; }
+        .input-box-container { background-color: var(--input-bg); border-radius: 30px; border: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 5px 10px; width: 100%; transition: border-color 0.3s, background-color 0.3s; }
         .input-box-container.dragover { border: 2px dashed var(--accent); background-color: var(--hover-bg); }
-        #imagePreviewContainer { display: none; padding: 5px 15px; position: relative; }
-        #imagePreview { max-height: 80px; border-radius: 8px; }
-        .remove-img { position: absolute; top: 0; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; }
-        .input-row { display: flex; align-items: center; width: 100%; }
         
+        #initImagePreviewContainer, #chatImagePreviewContainer { display: none; padding: 5px 15px 0 15px; position: relative; }
+        #initImagePreview, #chatImagePreview { max-height: 80px; border-radius: 8px; display: none; }
+        .remove-img { position: absolute; top: 0; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: none; }
+        
+        .input-row { display: flex; align-items: center; width: 100%; }
         .input-row input { flex: 1; background: none; border: none; color: var(--text-color); font-size: 14px; padding: 15px 15px; outline: none; min-width: 0; font-family: var(--font-sans);}
         .input-row input::placeholder { color: rgba(255,255,255,0.5); font-family: var(--font-sans); }
-        
         .input-row button { background: none; border: none; color: var(--text-color); cursor: pointer; padding: 10px; font-size: 20px; border-radius: 50%; flex-shrink: 0; opacity: 0.7;}
         .input-row button:hover { opacity: 1; color: var(--accent); }
 
-        /* Widget Kanan (Image Custom Icon) */
+        /* Widget Kanan */
         .floating-energy { position: fixed; top: 80px; right: 30px; background-color: #e0e6ed; color: #011935; padding: 8px 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 100; font-weight: bold; font-family: var(--font-sans); cursor: grab; user-select: none; display: none; border: 2px solid transparent; transition: border-color 0.3s; }
         .floating-energy:hover { border-color: var(--accent); }
         .floating-energy:active { cursor: grabbing; }
-        
         .floating-energy .title-sesi { font-size: 10px; opacity: 0.6; margin-bottom: 2px; text-align: left; }
         .stat-row { display: flex; align-items: center; gap: 8px; font-size: 12px; font-family: var(--font-sans); }
         .stat-row-icon-img { height: 16px; width: auto; object-fit: contain; } 
 
-        /* =========================================
-           MODALS (FLIP CARD & TOTAL ENERGY)
-           ========================================= */
+        /* MODALS */
         #mainModalOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 2000; justify-content: center; align-items: center; flex-direction: column; perspective: 1500px; }
-        
         .flip-card-container { width: 450px; height: 300px; display: none; }
         .flip-card { width: 100%; height: 100%; position: relative; transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
         .flip-card.flipped { transform: rotateY(180deg); }
-        
         .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 15px; border: 3px solid var(--accent); display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
         .flip-card-front { background-color: #737262; color: white; text-align: center; padding: 20px; }
         .flip-card-front h3 { font-family: var(--font-mono); font-size: 20px; margin-bottom: 20px; letter-spacing: 2px; }
         .flip-card-front p { font-family: var(--font-mono); font-size: 14px; padding: 0 10px; }
-
         .video-animasi { width: 130px; height: auto; margin-bottom: 20px; }
-
         .flip-card-back { background-color: var(--accent); transform: rotateY(180deg); padding: 0; overflow: hidden; }
         .flip-card-back img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 12px; }
         
-        /* Modal Total Energy */
         .total-energy-content { display: none; width: 450px; background-color: var(--modal-bg); border-radius: 15px; border: 3px solid var(--accent); padding: 30px; text-align: center; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .total-energy-content * { font-family: var(--font-mono); }
         .total-energy-content h3 { font-size: 20px; letter-spacing: 2px; margin-bottom: 25px; }
         .te-stats { display: flex; justify-content: center; align-items: baseline; gap: 40px; margin-bottom: 25px; } 
-        
         .te-item { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 18px; font-weight: bold; } 
         .te-icon-img { height: 45px; width: auto; object-fit: contain; } 
-        
         .te-desc { font-size: 14px; margin-bottom: 30px; line-height: 1.5; color: white; }
         .btn-tutup { background: transparent; border: 1px solid rgba(255,255,255,0.5); color: white; padding: 8px 30px; border-radius: 20px; cursor: pointer; }
         .btn-tutup:hover { background: rgba(255,255,255,0.1); border-color: white; }
 
-        /* =========================================
-           CSS ODOMETER ANIMATION (PERBAIKAN ALIGNMENT & ZOOM)
-           ========================================= */
-        .odo-container { 
-            display: flex; 
-            align-items: center; /* FIX: Diganti ke center biar gak tenggelam */
-            justify-content: center; 
-            white-space: nowrap; 
-        }
-        
-        .zoom-pulse { 
-            display: inline-flex; 
-            align-items: center; /* FIX: Diganti ke center */
-            animation: pulseOdo 2.5s ease-in-out forwards; 
-        }
+        /* CSS PREVIEW STRUK THERMAL */
+        .receipt-card { background: #fff; color: #000; padding: 40px; width: 380px; border-radius: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
+        .print-status-text { text-align: center; font-family: var(--font-sans); color: var(--accent); margin-top: 25px; font-weight: bold; font-size: 16px; }
 
-        .odo-wrap { 
-            display: inline-flex; 
-            height: 1.1em; 
-            line-height: 1.1em; 
-            overflow: hidden; 
-            position: relative; 
-            align-items: flex-start; /* FIX: Biar track anaknya nempel persis di atas */
-        }
-        .odo-track { 
-            display: flex; 
-            flex-direction: column; 
-            transition: transform 2s cubic-bezier(0.25, 1, 0.5, 1); 
-            margin: 0; 
-            padding: 0; 
-        }
-        .odo-track div { 
-            height: 1.1em; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-        }
-        
-        .static-char { 
-            display: inline-flex; 
-            height: 1.1em; 
-            align-items: center; 
-        }
-        .odo-suffix { 
-            display: inline-flex; 
-            align-items: center; 
-            margin-left: 6px; 
-        }
-        
-        @keyframes pulseOdo {
-            0% { font-size: 1em; }
-            20% { font-size: 1.5em; }
-            80% { font-size: 1.5em; }
-            100% { font-size: 1em; } 
-        }
+        /* CSS ODOMETER */
+        .odo-container { display: flex; align-items: center; justify-content: center; white-space: nowrap; }
+        .zoom-pulse { display: inline-flex; align-items: center; animation: pulseOdo 2.5s ease-in-out forwards; }
+        .odo-wrap { display: inline-flex; height: 1.1em; line-height: 1.1em; overflow: hidden; position: relative; align-items: flex-start; }
+        .odo-track { display: flex; flex-direction: column; transition: transform 2s cubic-bezier(0.25, 1, 0.5, 1); margin: 0; padding: 0; }
+        .odo-track div { height: 1.1em; display: flex; justify-content: center; align-items: center; }
+        .static-char { display: inline-flex; height: 1.1em; align-items: center; }
+        .odo-suffix { display: inline-flex; align-items: center; margin-left: 6px; }
+        @keyframes pulseOdo { 0% { font-size: 1em; } 20% { font-size: 1.5em; } 80% { font-size: 1.5em; } 100% { font-size: 1em; } }
 
         @media (max-width: 768px) {
             .sidebar { position: absolute; height: 100%; box-shadow: 4px 0 15px rgba(0,0,0,0.5); }
@@ -241,6 +165,7 @@
             .chat-container { padding: 15px 10px; gap: 20px; }
             .floating-energy { top: 70px; right: 10px; }
             .flip-card-container, .total-energy-content { width: 90%; }
+            .receipt-card { width: 90%; padding: 30px 20px;}
         }
     </style>
 </head>
@@ -259,9 +184,25 @@
         <div class="history-title">Riwayat Percakapan</div>
         <div class="history-list" id="historyList"></div>
         
-        <button class="setting-btn" onclick="connectBluetoothPrinter()">
-            <span style="font-size: 18px;">⚙</span> SETTING
-        </button>
+        <div class="dropdown">
+            <button class="setting-btn" onclick="toggleDropdown(event)">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 18px;">⚙️</span> SETTING
+                </div>
+                <span style="font-size: 10px;">▼</span>
+            </button>
+            <div id="settingDropdown" class="dropdown-content">
+                <button onclick="setGeminiApiKey()">
+                    <span style="font-size: 18px;">🔑</span> API KEY
+                </button>
+                <button onclick="connectBluetoothPrinter()">
+                    <span style="font-size: 18px;">🖨️</span> KONEK PRINTER
+                </button>
+                <button onclick="resetSession()" style="color: #ff4c4c;">
+                    <span style="font-size: 18px;">🔄</span> RESET SESSION
+                </button>
+            </div>
+        </div>
     </div>
 
     <div class="main-content">
@@ -285,9 +226,9 @@
             </div>
             <div class="input-wrapper">
                 <div class="input-box-container" id="initDropZone">
-                    <div id="initImagePreviewContainer" style="display:none; padding: 5px 15px; position:relative;">
-                        <img id="initImagePreview" src="" style="max-height: 60px; border-radius: 8px;">
-                        <button class="remove-img" onclick="removeImage('init')">×</button>
+                    <div id="initImagePreviewContainer">
+                        <img id="initImagePreview" src="">
+                        <button class="remove-img" id="initRemoveImgBtn" onclick="removeImage('init')">×</button>
                     </div>
                     <form class="input-row" onsubmit="handleInitialSend(event)">
                         <input type="text" id="initialPrompt" placeholder="Ketik pertanyaan sepele lo di sini... (Struk karbon akan otomatis dicetak)" autocomplete="off">
@@ -304,9 +245,9 @@
             <div class="input-area">
                 <div class="input-wrapper">
                     <div class="input-box-container" id="chatDropZone">
-                        <div id="chatImagePreviewContainer" style="display:none; padding: 5px 15px; position:relative;">
-                            <img id="chatImagePreview" src="" style="max-height: 60px; border-radius: 8px;">
-                            <button class="remove-img" onclick="removeImage('chat')">×</button>
+                        <div id="chatImagePreviewContainer">
+                            <img id="chatImagePreview" src="">
+                            <button class="remove-img" id="chatRemoveImgBtn" onclick="removeImage('chat')">×</button>
                         </div>
                         <form class="input-row" onsubmit="handleChatSend(event)">
                             <input type="text" id="chatPrompt" placeholder="Ketik pertanyaan sepele lo di sini... (Struk karbon akan otomatis dicetak)" autocomplete="off">
@@ -329,7 +270,6 @@
     </div>
 
     <div id="mainModalOverlay">
-        
         <div class="flip-card-container" id="flipCardContainer">
             <div class="flip-card" id="flipCardElement">
                 <div class="flip-card-front">
@@ -358,19 +298,16 @@
             <div class="te-desc">Lumayan yah? padahal gitu doang</div>
             <button class="btn-tutup" onclick="closeModals()">Tutup</button>
         </div>
+    </div>
 
+    <div id="receiptModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); z-index: 3000; justify-content: center; align-items: center; flex-direction: column;">
+        <div class="receipt-card" id="receiptContent"></div>
+        <div class="print-status-text" id="printStatusText">Mempersiapkan Printer...</div>
     </div>
 
     <script>
         const appData = JSON.parse(localStorage.getItem('aiEcoDataTA')) || { currentChatId: null, chats: {} };
         let currentImageBase64 = null;
-
-        const aiResponses = [
-            "Asal lo tau aja ya, hal sepele kayak gini tuh bikin server di ujung dunia sana kerja keras buat mikir.",
-            "Jawaban udah gw siapin nih bro. Tapi inget, setiap karakter yang gw ketik ini ngebakar daya listrik yang gak dikit.",
-            "Done! Data udah diproses. Lumayan nih nambahin kerjaan kipas pendingin server gara-gara prompt lu barusan.",
-            "Sebenernya gampang sih jawabannya, tapi komputasi di balik layar tetep jalan dan nguras energi."
-        ];
 
         window.onload = () => {
             if (window.innerWidth <= 768) document.getElementById('sidebar').classList.add('collapsed');
@@ -379,13 +316,101 @@
             setupDragAndDrop();
         };
 
+        function toggleDropdown(e) {
+            if(e) e.stopPropagation();
+            document.getElementById("settingDropdown").classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.dropdown')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    if (dropdowns[i].classList.contains('show')) {
+                        dropdowns[i].classList.remove('show');
+                    }
+                }
+            }
+        }
+
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
         function saveData() { localStorage.setItem('aiEcoDataTA', JSON.stringify(appData)); renderHistory(); }
 
         function resetSession() {
-            if(confirm("Yakin mau reset semua data sesi (buat testing)?")) {
+            if(confirm("Yakin mau reset semua data sesi?")) {
                 localStorage.removeItem('aiEcoDataTA');
+                localStorage.removeItem('validGeminiModel'); // Bersihin cache model juga
                 location.reload();
+            }
+        }
+
+        function setGeminiApiKey() {
+            const current = localStorage.getItem('geminiApiKey') || '';
+            const input = prompt("Masukkan Gemini API Key lu (Gratis di Google AI Studio):\nKosongkan untuk hapus.", current);
+            if (input !== null) {
+                localStorage.setItem('geminiApiKey', input.trim());
+                localStorage.removeItem('validGeminiModel'); // Hapus model lama biar dicari ulang dengan key baru
+                alert("API Key berhasil disimpan!");
+            }
+        }
+
+       // PERBAIKAN 3: NGAKTIFIN GOOGLE SEARCH BIAR AI-NYA PINTER DAN UPDATE BERITA TERBARU
+       async function fetchGeminiResponse(promptText, base64Img) {
+            const apiKey = localStorage.getItem('geminiApiKey');
+            if (!apiKey) return "Wah bro, API Key Gemini lu belum di-setting! Klik tombol '⚙️ SETTING' > '🔑 API KEY' di menu kiri dulu biar gw bisa jawab beneran ya.";
+            
+            let parts = [{ text: promptText || "Jelaskan gambar ini dengan detail." }];
+            
+            if (base64Img) {
+                const mimeType = base64Img.split(';')[0].split(':')[1];
+                const base64Data = base64Img.split(',')[1];
+                parts.push({ inlineData: { mimeType: mimeType, data: base64Data } });
+            }
+
+            try {
+                let targetModelName = localStorage.getItem('validGeminiModel');
+
+                if (!targetModelName) {
+                    console.log("Mencari model Gemini yang tersedia untuk API Key ini...");
+                    const modelRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                    const modelData = await modelRes.json();
+
+                    if (modelData.error) throw new Error("Gagal ambil daftar model: " + modelData.error.message);
+
+                    const validModels = modelData.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'));
+
+                    if (validModels.length === 0) throw new Error("Gak ada model yang support generateContent di API Key lu bro.");
+
+                    const bestModel = validModels.find(m => m.name.includes('gemini-1.5-flash')) 
+                                   || validModels.find(m => m.name.includes('gemini-1.5-pro'))
+                                   || validModels[0]; 
+
+                    targetModelName = bestModel.name; 
+                    localStorage.setItem('validGeminiModel', targetModelName);
+                    console.log("Model terpilih otomatis:", targetModelName);
+                }
+
+                // DI SINI KUNCINYA: Kita tambahin fitur Google Search
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${targetModelName}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        contents: [{ parts: parts }],
+                        tools: [{ googleSearch: {} }] // Baris sakti biar AI bisa browsing internet!
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    localStorage.removeItem('validGeminiModel');
+                    throw new Error(data.error.message);
+                }
+                
+                return data.candidates[0].content.parts[0].text;
+
+            } catch (error) {
+                console.error(error);
+                return `Waduh error bro pas narik data: ${error.message}`;
             }
         }
 
@@ -448,13 +473,13 @@
             reader.onload = (e) => {
                 currentImageBase64 = e.target.result;
                 const prefix = type === 'init' ? 'init' : 'chat';
+                document.getElementById(`${prefix}ImagePreviewContainer`).style.display = 'block';
                 document.getElementById(`${prefix}ImagePreview`).src = currentImageBase64;
-                document.getElementById(`${prefix}ImagePreviewContainer`).style.display = 'inline-block';
+                document.getElementById(`${prefix}ImagePreview`).style.display = 'inline-block';
+                document.getElementById(`${prefix}RemoveImgBtn`).style.display = 'block';
             };
             reader.readAsDataURL(file);
         }
-        
-        function removeImage(type) { currentImageBase64 = null; document.getElementById(`${type}ImagePreviewContainer`).style.display = 'none'; document.getElementById(`${type}ImagePreview`).src = ''; }
         
         function setupDragAndDrop() {
             ['init', 'chat'].forEach(prefix => {
@@ -464,9 +489,17 @@
                 zone.addEventListener('drop', (e) => { e.preventDefault(); zone.classList.remove('dragover'); if(e.dataTransfer.files.length) handleImageFile(e.dataTransfer.files[0], prefix); });
             });
         }
+        
+        function removeImage(type) { 
+            currentImageBase64 = null; 
+            document.getElementById(`${type}ImagePreviewContainer`).style.display = 'none';
+            document.getElementById(`${type}ImagePreview`).style.display = 'none'; 
+            document.getElementById(`${type}ImagePreview`).src = ''; 
+            document.getElementById(`${type}RemoveImgBtn`).style.display = 'none'; 
+        }
 
         function calculateEnergy(userText, aiText, hasImage) {
-            const totalChars = (userText || "").length + aiText.length;
+            const totalChars = (userText || "").length + (aiText || "").length;
             let energyWh = 0.5; energyWh += (totalChars * 0.005);
             if(hasImage) energyWh += 2.0;
             return parseFloat(energyWh.toFixed(1));
@@ -481,134 +514,68 @@
             const totalContainer = document.getElementById('totalEnergyContainer');
             
             const videoEl = flipCard.querySelector('.video-animasi');
-            if(videoEl) {
-                videoEl.currentTime = 0;
-                videoEl.play().catch(e => console.log(e));
-            }
+            if(videoEl) { videoEl.currentTime = 0; videoEl.play().catch(e => console.log(e)); }
 
             flipCard.classList.remove('flipped');
-            flipContainer.style.display = 'block';
-            totalContainer.style.display = 'none';
-            overlay.style.display = 'flex';
+            flipContainer.style.display = 'block'; totalContainer.style.display = 'none'; overlay.style.display = 'flex';
 
-            await wait(5000);
-            flipCard.classList.add('flipped');
-            await wait(4000);
-            overlay.style.display = 'none';
+            await wait(5000); flipCard.classList.add('flipped'); await wait(4000); overlay.style.display = 'none';
         }
 
         let isDraggingWidget = false;
         function makeDraggable(el) {
-            let startX, startY, initX, initY;
-            let isMouseDown = false;
-            
+            let startX, startY, initX, initY; let isMouseDown = false;
             el.addEventListener('mousedown', e => { 
-                isMouseDown = true;
-                isDraggingWidget = false; 
-                startX = e.clientX; startY = e.clientY; 
-                const rect = el.getBoundingClientRect(); 
-                initX = rect.left; initY = rect.top; 
-                el.style.cursor = 'grabbing'; 
+                isMouseDown = true; isDraggingWidget = false; startX = e.clientX; startY = e.clientY; 
+                const rect = el.getBoundingClientRect(); initX = rect.left; initY = rect.top; el.style.cursor = 'grabbing'; 
             });
             document.addEventListener('mousemove', e => { 
                 if (!isMouseDown) return; 
-                
-                if (Math.abs(e.clientX - startX) > 3 || Math.abs(e.clientY - startY) > 3) {
-                    isDraggingWidget = true;
-                }
-                
+                if (Math.abs(e.clientX - startX) > 3 || Math.abs(e.clientY - startY) > 3) isDraggingWidget = true;
                 if (isDraggingWidget) {
-                    el.style.left = `${initX + e.clientX - startX}px`; 
-                    el.style.top = `${initY + e.clientY - startY}px`; 
-                    el.style.bottom = 'auto'; el.style.right = 'auto'; 
-                    el.style.transform = 'none'; 
+                    el.style.left = `${initX + e.clientX - startX}px`; el.style.top = `${initY + e.clientY - startY}px`; 
+                    el.style.bottom = 'auto'; el.style.right = 'auto'; el.style.transform = 'none'; 
                 }
             });
-            document.addEventListener('mouseup', () => { 
-                isMouseDown = false; 
-                el.style.cursor = 'grab'; 
-                setTimeout(() => isDraggingWidget = false, 0); 
-            });
+            document.addEventListener('mouseup', () => { isMouseDown = false; el.style.cursor = 'grab'; setTimeout(() => isDraggingWidget = false, 0); });
         }
         makeDraggable(document.getElementById('floatingEnergy'));
 
-        /* FUNGSI JS ODOMETER (LOGIKA PENGHITUNGAN NATURAL) */
         function animateOdometer(id, targetVal, suffix) {
-            const container = document.getElementById(id);
-            container.innerHTML = ''; 
-            
-            let valStr = targetVal.toString();
-
-            const numberWrapper = document.createElement('span');
-            numberWrapper.className = 'zoom-pulse';
-
-            const digits = valStr.split('');
-            digits.forEach((char) => {
-                if (isNaN(parseInt(char))) {
-                    const span = document.createElement('span');
-                    span.className = 'static-char';
-                    span.innerText = char;
-                    numberWrapper.appendChild(span);
+            const container = document.getElementById(id); container.innerHTML = ''; 
+            let valStr = targetVal.toString(); const numberWrapper = document.createElement('span'); numberWrapper.className = 'zoom-pulse';
+            valStr.split('').forEach((char) => {
+                if (isNaN(parseInt(char)) && char !== '.') {
+                    const span = document.createElement('span'); span.className = 'static-char'; span.innerText = char; numberWrapper.appendChild(span);
+                } else if (char === '.') {
+                    const span = document.createElement('span'); span.className = 'static-char'; span.innerText = '.'; numberWrapper.appendChild(span);
                 } else {
-                    const targetNum = parseInt(char);
-                    const wrap = document.createElement('span');
-                    wrap.className = 'odo-wrap';
-                    
-                    const track = document.createElement('div');
-                    track.className = 'odo-track';
-                    
-                    let sequence = '';
-                    
-                    // FIX: Biar natural, kita set minimal dia jalan 1 putaran (0-9)
-                    // Dan angka AWAL yang dirender di HTML dijamin 0 (jadi ga layar kosong)
-                    const rolls = 1; 
-                    for (let r = 0; r <= rolls; r++) {
-                        let max = (r === rolls) ? targetNum : 9;
-                        for(let n=0; n<=max; n++) {
-                            sequence += `<div>${n}</div>`;
-                        }
-                    }
-                    
-                    track.innerHTML = sequence;
-                    wrap.appendChild(track);
-                    numberWrapper.appendChild(wrap);
-
-                    setTimeout(() => {
-                        // Ngegeser track sesuai jumlah item dikali tinggi container (1.1em)
-                        const targetIndex = (rolls * 10) + targetNum;
-                        track.style.transform = `translateY(-${targetIndex * 1.1}em)`;
-                    }, 50);
+                    const targetNum = parseInt(char); const wrap = document.createElement('span'); wrap.className = 'odo-wrap';
+                    const track = document.createElement('div'); track.className = 'odo-track';
+                    let sequence = ''; const rolls = 1; 
+                    for (let r = 0; r <= rolls; r++) { let max = (r === rolls) ? targetNum : 9; for(let n=0; n<=max; n++) sequence += `<div>${n}</div>`; }
+                    track.innerHTML = sequence; wrap.appendChild(track); numberWrapper.appendChild(wrap);
+                    setTimeout(() => { const targetIndex = (rolls * 10) + targetNum; track.style.transform = `translateY(-${targetIndex * 1.1}em)`; }, 50);
                 }
             });
-
-            container.appendChild(numberWrapper);
-
-            const sufSpan = document.createElement('span');
-            sufSpan.className = 'odo-suffix';
-            sufSpan.innerHTML = suffix; 
+            container.appendChild(numberWrapper); const sufSpan = document.createElement('span'); sufSpan.className = 'odo-suffix'; sufSpan.innerHTML = suffix; 
             container.appendChild(sufSpan);
         }
 
         document.getElementById('floatingEnergy').addEventListener('click', (e) => {
             if (isDraggingWidget) return; 
-            
-            const chatData = appData.chats[appData.currentChatId];
-            if(!chatData) return;
-            
-            document.getElementById('mainModalOverlay').style.display = 'flex';
-            document.getElementById('flipCardContainer').style.display = 'none';
-            document.getElementById('totalEnergyContainer').style.display = 'block';
-
-            animateOdometer('modal-total-wh', chatData.totalWh, 'WH');
-            animateOdometer('modal-total-ml', chatData.totalMl, 'ML Air');
+            const chatData = appData.chats[appData.currentChatId]; if(!chatData) return;
+            document.getElementById('mainModalOverlay').style.display = 'flex'; document.getElementById('flipCardContainer').style.display = 'none'; document.getElementById('totalEnergyContainer').style.display = 'block';
+            animateOdometer('modal-total-wh', chatData.totalWh, 'WH'); animateOdometer('modal-total-ml', chatData.totalMl, 'ML Air');
         });
 
-        function closeModals() {
-            document.getElementById('mainModalOverlay').style.display = 'none';
-        }
-
+        function closeModals() { document.getElementById('mainModalOverlay').style.display = 'none'; }
         function handleInitialSend(e) { e.preventDefault(); processInput(document.getElementById('initialPrompt')); }
         function handleChatSend(e) { e.preventDefault(); processInput(document.getElementById('chatPrompt')); }
+
+        function formatMarkdown(text) {
+            return text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\*(.*?)\*/g, '<i>$1</i>').replace(/\n/g, '<br>');
+        }
 
         async function processInput(inputEl) {
             const text = inputEl.value.trim();
@@ -626,36 +593,28 @@
 
             appendMessageUI('user', text, userImg);
             chat.history.push({ role: 'user', content: text, image: userImg });
-            chat.totalPrompts += 1;
-            
-            chat.totalMl += 50; 
+            chat.totalPrompts += 1; chat.totalMl += 50; 
 
             const thinkingId = appendThinkingLoadingUI();
             scrollToBottom();
 
-            const textEl = document.getElementById(`text-${thinkingId}`);
-            await wait(1000);
-            if(textEl) textEl.innerText = "Mencari jawaban...";
-            await wait(1000);
+            const aiRespText = await fetchGeminiResponse(text, userImg);
 
             const thinkRow = document.getElementById(thinkingId);
             if(thinkRow) {
-                const starEl = thinkRow.querySelector('.thinking-star');
-                if(starEl) starEl.classList.remove('spin');
-                if(textEl) textEl.innerHTML = `Tampilkan Alur Berpikir <span style="font-size:10px; margin-left:5px;">▼</span>`;
+                const starEl = thinkRow.querySelector('.thinking-star'); if(starEl) starEl.classList.remove('spin');
+                const textEl = document.getElementById(`text-${thinkingId}`); if(textEl) textEl.innerHTML = `Tampilkan Alur Berpikir <span style="font-size:10px; margin-left:5px;">▼</span>`;
             }
 
-            const aiResp = aiResponses[Math.floor(Math.random() * aiResponses.length)];
-            appendMessageUI('ai', aiResp);
-            chat.history.push({ role: 'ai', content: aiResp });
+            appendMessageUI('ai', formatMarkdown(aiRespText));
+            chat.history.push({ role: 'ai', content: aiRespText });
 
-            const turnEnergy = calculateEnergy(text, aiResp, userImg !== null);
+            const turnEnergy = calculateEnergy(text, aiRespText, userImg !== null);
             chat.totalWh += turnEnergy; saveData();
-            
             updateFloatingStats(chat.totalWh, chat.totalMl, true);
 
             await showFlipModalSequence();
-            generateAndPrintReceipt(chat);
+            await generateAndPrintReceipt(chat); 
         }
 
         function appendMessageUI(role, text, imageBase64 = null, animate = true) {
@@ -663,17 +622,14 @@
             const content = document.createElement('div'); content.className = 'message-content';
             if (imageBase64) content.innerHTML += `<img src="${imageBase64}" class="msg-image-preview"><br>`;
             if (text) content.innerHTML += text;
-            row.appendChild(content);
-            document.getElementById('chatContainer').appendChild(row);
+            row.appendChild(content); document.getElementById('chatContainer').appendChild(row);
             if (animate) scrollToBottom();
         }
 
         function appendThinkingLoadingUI() {
-            const row = document.createElement('div'); row.className = `message-row thinking`;
-            row.id = 'think-' + Date.now();
-            row.innerHTML = `<div class="thinking-content"><span class="thinking-star spin">✦</span><span class="thinking-text" id="text-${row.id}">Analisa pertanyaan...</span></div>`;
-            document.getElementById('chatContainer').appendChild(row);
-            return row.id;
+            const row = document.createElement('div'); row.className = `message-row thinking`; row.id = 'think-' + Date.now();
+            row.innerHTML = `<div class="thinking-content"><span class="thinking-star spin">✦</span><span class="thinking-text" id="text-${row.id}">Generative AI Sedang Memproses...</span></div>`;
+            document.getElementById('chatContainer').appendChild(row); return row.id;
         }
 
         function appendThinkingFinalUI() {
@@ -695,75 +651,119 @@
             try {
                 const device = await navigator.bluetooth.requestDevice({
                     acceptAllDevices: true,
-                    optionalServices: [
-                        '000018f0-0000-1000-8000-00805f9b34fb', 
-                        'e7810a71-73ae-499d-8c15-faa9aef0c3f2', 
-                        '49535343-fe7d-4ae5-8fa9-9fafd205e455'
-                    ] 
+                    optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', '49535343-fe7d-4ae5-8fa9-9fafd205e455'] 
                 });
-
                 console.log('Menyambungkan ke:', device.name);
-                const server = await device.gatt.connect();
-                const services = await server.getPrimaryServices();
-
+                const server = await device.gatt.connect(); const services = await server.getPrimaryServices();
                 for (const service of services) {
                     const characteristics = await service.getCharacteristics();
                     for (const char of characteristics) {
-                        if (char.properties.write || char.properties.writeWithoutResponse) {
-                            globalPrintCharacteristic = char;
-                            alert(`Berhasil terhubung ke Printer: ${device.name}!`);
-                            return;
-                        }
+                        if (char.properties.write || char.properties.writeWithoutResponse) { globalPrintCharacteristic = char; alert(`Berhasil terhubung ke Printer: ${device.name}!`); return; }
                     }
                 }
                 alert('Gagal mendeteksi jalur print di perangkat ini.');
-            } catch (error) {
-                console.error('Batal koneksi:', error);
-            }
+            } catch (error) { console.error('Batal koneksi:', error); }
         }
 
-        function generateAndPrintReceipt(c) {
-            if (!globalPrintCharacteristic) return; 
-            
-            const wh = c.totalWh;
-            const ml = c.totalMl;
-            const title = c.title.length > 15 ? c.title.substring(0, 15) + '...' : c.title; 
-            
-            const receiptText = 
-`================================
-        STRUK ENERGI AI         
-================================
-Sesi : ${title}
-Total: ${c.totalPrompts} Prompt
-Daya : ~${wh.toFixed(1)} Wh
-Air  : ~${ml} ML (Air Bersih)
---------------------------------
-Setara dengan:
-Lampu 10W : ${Math.round(wh * 6)} menit
-Charge HP : ${Math.round((wh / 15) * 100)}%
-Mobil EV  : ${Math.round(wh * 6.66)} meter
---------------------------------
-================================
- Terima kasih telah menggunakan 
- energi komputasi dengan bijak! 
-================================\n\n\n`;
+        function formatLine(leftText, rightText, totalLength = 32) {
+            const spacesNeeded = totalLength - (leftText.length + rightText.length);
+            return leftText + " ".repeat(Math.max(0, spacesNeeded)) + rightText;
+        }
 
-            executePrint(receiptText);
+        function centerText(text, length = 32) {
+            if (text.length >= length) return text;
+            const leftPad = Math.floor((length - text.length) / 2);
+            return " ".repeat(leftPad) + text;
+        }
+
+        // PERBAIKAN 2: Penambahan inline style buat nge-lock font monospace biar garisnya full
+        async function generateAndPrintReceipt(c) {
+            const wh = c.totalWh.toFixed(1);
+            const ml = c.totalMl;
+            const co2 = (c.totalWh * 0.85).toFixed(1); 
+            
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
+            const timeStr = now.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'}).replace(':', '.');
+            const namaUser = "Najmu"; 
+            
+            const dashedLine = "-".repeat(32);
+            
+            // Maksa pake font monospace di dalam tag bold biar ukurannya ga menciut
+            const boldDashedLine = `<b style="font-family: 'IBM Plex Mono', monospace;">${dashedLine}</b>`;
+
+            const strukBodyTextPlain = 
+                dashedLine + "\n" +
+                formatLine("Tanggal:", `${dateStr} (${timeStr} WIB)`) + "\n" +
+                formatLine("Nama:", namaUser) + "\n" +
+                dashedLine + "\n" +
+                formatLine("Air Pendingin Server", `${ml} ML`) + "\n" +
+                formatLine("Listrik", `${wh} WH`) + "\n" +
+                formatLine("Emisi Karbon (CO2)", `${co2} Gram`) + "\n\n" +
+                dashedLine + "\n" +
+                "TOTAL\n" +
+                formatLine("KERUSAKAN:", "BUMI YANG BAYAR");
+
+            const strukBodyTextHTML = 
+                boldDashedLine + "\n" +
+                formatLine("Tanggal:", `${dateStr} (${timeStr} WIB)`) + "\n" +
+                formatLine("Nama:", namaUser) + "\n" +
+                boldDashedLine + "\n" +
+                formatLine("Air Pendingin Server", `${ml} ML`) + "\n" +
+                formatLine("Listrik", `${wh} WH`) + "\n" +
+                formatLine("Emisi Karbon (CO2)", `${co2} Gram`) + "\n\n" +
+                boldDashedLine + "\n" +
+                `<b style="font-family: 'IBM Plex Mono', monospace;">TOTAL</b>\n` +
+                `<b style="font-family: 'IBM Plex Mono', monospace;">${formatLine("KERUSAKAN:", "BUMI YANG BAYAR")}</b>`;
+
+            const printText = 
+                centerText("INSTANT SIH TAPI") + "\n" +
+                centerText("EMANGNYA WORTH IT?") + "\n" +
+                centerText("CEK SENDIRI DEH...") + "\n\n" +
+                strukBodyTextPlain + "\n\n\n" +
+                centerText("Semua sumber daya di atas") + "\n" +
+                centerText("terkuras cuma buat nanya hal") + "\n" +
+                centerText("receh kaya tadi.") + "\n" +
+                centerText("#SureAboutThat?") + "\n\n\n";
+
+            const previewHTML = `
+                <div style="font-family: 'Rubik', sans-serif; font-weight: 900; font-size: 24px; line-height: 1.2; text-transform: uppercase; text-align: center; margin-bottom: 25px; color: #000; letter-spacing: -0.5px;">
+                    INSTANT SIH TAPI<br>EMANGNYA WORTH IT?<br>CEK SENDIRI DEH...
+                </div>
+                
+                <div style="width: 100%; display: flex; justify-content: center; overflow-x: hidden;">
+                    <div style="font-family: 'IBM Plex Mono', monospace; white-space: pre; font-size: 15px; line-height: 1.5; color: #000; text-align: left; letter-spacing: 0px;">${strukBodyTextHTML}</div>
+                </div>
+
+                <div style="font-family: 'IBM Plex Sans', sans-serif; font-style: italic; text-align: center; font-size: 15px; margin-top: 35px; line-height: 1.4; color: #000;">
+                    Semua sumber daya di atas terkuras<br>cuma buat nanya hal receh kaya tadi.<br>
+                    <strong style="font-weight: 700; display: block; margin-top: 8px;">#SureAboutThat?</strong>
+                </div>
+            `;
+
+            document.getElementById('receiptContent').innerHTML = previewHTML;
+            document.getElementById('receiptModalOverlay').style.display = 'flex';
+            const statusText = document.getElementById('printStatusText');
+
+            if (globalPrintCharacteristic) {
+                statusText.innerText = "Sedang mencetak struk...";
+                await executePrint(printText);
+                statusText.innerText = "Struk berhasil dicetak!";
+                await wait(1500); 
+            } else {
+                statusText.innerText = "Printer tidak terhubung. Hanya Preview.";
+                await wait(4000); 
+            }
+
+            document.getElementById('receiptModalOverlay').style.display = 'none';
         }
 
         async function executePrint(text) {
             try {
-                const encoder = new TextEncoder();
-                const data = encoder.encode(text); 
-                const CHUNK_SIZE = 100;
-                for (let i = 0; i < data.length; i += CHUNK_SIZE) {
-                    const chunk = data.slice(i, i + CHUNK_SIZE);
-                    await globalPrintCharacteristic.writeValue(chunk);
-                }
+                const encoder = new TextEncoder(); const data = encoder.encode(text); const CHUNK_SIZE = 100;
+                for (let i = 0; i < data.length; i += CHUNK_SIZE) await globalPrintCharacteristic.writeValue(data.slice(i, i + CHUNK_SIZE));
                 console.log('Struk berhasil dicetak!');
-            } catch (error) {
-                console.error('Error saat ngirim data:', error);
-            }
+            } catch (error) { console.error('Error saat ngirim data:', error); }
         }
     </script>
 </body>
