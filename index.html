@@ -780,14 +780,20 @@
                     await printByteArray(headerBytes);
                     await wait(200);
 
-                    const encoder = new TextEncoder();
-                    await printByteArray(new Uint8Array([0x1B, 0x61, 0x00])); 
-                    await printByteArray(encoder.encode(strukBodyTextPlain.replace(/\n/g, '\r\n')));
-                    await printByteArray(encoder.encode(ESC_BOLD_ON + footerTotalText.replace(/\n/g, '\r\n') + ESC_BOLD_OFF));
-                    await wait(200);
+                   // ... (kode sebelumnya)
+const encoder = new TextEncoder();
+await printByteArray(new Uint8Array([0x1B, 0x61, 0x00])); 
+await printByteArray(encoder.encode(strukBodyTextPlain.replace(/\n/g, '\r\n')));
+await printByteArray(encoder.encode(ESC_BOLD_ON + footerTotalText.replace(/\n/g, '\r\n') + ESC_BOLD_OFF));
 
-                    await printByteArray(new Uint8Array([0x1B, 0x61, 0x01])); 
-                    await printByteArray(footerBytes);
+// --- UBAH BAGIAN SINI BRO ---
+await wait(1000); // Naikin jedanya jadi 1 detik biar mesin siap-siap
+await printByteArray(new Uint8Array([0x0A])); // <--- INI PENTING BANGET: Paksa printer nge-print sisa teksnya dulu!
+// ---------------------------
+
+await printByteArray(new Uint8Array([0x1B, 0x61, 0x01])); 
+await printByteArray(footerBytes);
+// ... (sisa kode lu)
                     
                     // =========================================================
                     // PERBAIKAN FINAL: JEDA NAFAS SEBELUM KERTAS DIDORONG
